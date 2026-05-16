@@ -1,0 +1,33 @@
+# Linux 客户端依赖 (ARM64 / 飞腾2000 / 麒麟V10)
+# 所有包均有 aarch64 manylinux 预编译 wheel
+
+# basic and cli
+rich
+typer
+colorama
+markdown
+
+# system, input, hardware
+pynput
+sounddevice
+watchdog
+
+# network and api
+websockets
+openai
+ollama
+httpx
+
+# data process
+numpy
+pypinyin
+srt
+
+# tray (Linux uses PySide6, not pystray)
+PySide6-Essentials
+shiboken6
+Pillow
+tkhtmlview
+
+# clipboard
+pyclip

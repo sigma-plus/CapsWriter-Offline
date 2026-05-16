@@ -1,0 +1,21 @@
+# Linux 服务端依赖 (CUDA 加速版)
+# 目标：Ubuntu 24.04 x86_64 + CUDA 13.0
+
+# ASR core
+sherpa-onnx
+numpy
+onnxruntime-gpu
+
+# basic
+rich
+websockets
+watchdog
+pypinyin
+
+# tray (Linux uses PySide6, not pystray)
+PySide6-Essentials
+shiboken6
+Pillow
+
+markdown
+tkhtmlview

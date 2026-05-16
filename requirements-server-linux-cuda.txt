@@ -5,6 +5,7 @@
 sherpa-onnx
 numpy
 onnxruntime-gpu
+soundfile
 
 # basic
 rich

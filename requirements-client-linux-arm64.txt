@@ -8,6 +8,7 @@ colorama
 markdown
 
 # system, input, hardware
+keyboard
 pynput
 sounddevice
 watchdog
@@ -22,6 +23,7 @@ httpx
 numpy
 pypinyin
 srt
+rapidfuzz
 
 # tray (Linux uses PySide6, not pystray)
 PySide6-Essentials

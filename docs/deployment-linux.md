@@ -14,12 +14,13 @@
 
 ### 1.1 拉取代码
 
-从 GitHub 拉取 `feature/linux-cross-platform` 分支：
+从 GitHub 拉取代码（如果已合并到主分支，直接克隆即可；否则切换到功能分支）：
 
 ```bash
 git clone https://github.com/HaujetZhao/CapsWriter-Offline.git
 cd CapsWriter-Offline
-git checkout feature/linux-cross-platform
+# 如果已合并到 master，无需切换分支
+# git checkout feature/linux-cross-platform  # 功能分支（合并前使用）
 ```
 
 ### 1.2 代码结构说明
@@ -51,7 +52,7 @@ git checkout feature/linux-cross-platform
 ```bash
 git clone https://github.com/HaujetZhao/CapsWriter-Offline.git
 cd CapsWriter-Offline
-git checkout feature/linux-cross-platform
+# git checkout feature/linux-cross-platform  # 功能分支（合并前使用）
 ```
 
 ### 2.3 下载依赖包
@@ -159,7 +160,7 @@ make -j$(nproc)
 编辑 `config_server.py`，确认以下配置：
 
 ```python
-# 第 143 行附近，Qwen3ASRGGUFArgs 部分
+# 在 Qwen3ASRGGUFArgs 类中，找到 onnx_provider 设置
 onnx_provider = 'CUDA'  # 确保使用 CUDA 加速
 ```
 

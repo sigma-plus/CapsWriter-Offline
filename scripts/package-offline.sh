@@ -11,6 +11,12 @@ DIST="$ROOT/offline-release"
 
 mkdir -p "$DIST"
 
+# 预检查：确认下载已完成
+if [ ! -d "$OFFLINE" ]; then
+    echo "ERROR: 未找到 offline-packages 目录。请先运行 download-wheels.sh"
+    exit 1
+fi
+
 # --------------------------------------------------
 # 服务端离线包
 # --------------------------------------------------
@@ -20,7 +26,11 @@ rm -rf "$SERVER_DIR"
 mkdir -p "$SERVER_DIR"
 
 # Python wheels
-cp "$OFFLINE/server-x86_64/"*.whl "$SERVER_DIR/" 2>/dev/null || true
+if [ -d "$OFFLINE/server-x86_64" ] && ls "$OFFLINE/server-x86_64/"*.whl 1>/dev/null 2>&1; then
+    cp "$OFFLINE/server-x86_64/"*.whl "$SERVER_DIR/"
+else
+    echo "WARNING: 未找到服务端 wheel 包，请确认 download-wheels.sh 已成功执行"
+fi
 
 # llama.cpp 源码
 cp -r "$OFFLINE/llama.cpp-src" "$SERVER_DIR/llama.cpp"
@@ -70,7 +80,11 @@ rm -rf "$CLIENT_DIR"
 mkdir -p "$CLIENT_DIR"
 
 # Python wheels
-cp "$OFFLINE/client-aarch64/"*.whl "$CLIENT_DIR/" 2>/dev/null || true
+if [ -d "$OFFLINE/client-aarch64" ] && ls "$OFFLINE/client-aarch64/"*.whl 1>/dev/null 2>&1; then
+    cp "$OFFLINE/client-aarch64/"*.whl "$CLIENT_DIR/"
+else
+    echo "WARNING: 未找到客户端 wheel 包，请确认 download-wheels.sh 已成功执行"
+fi
 
 # 依赖文件
 cp "$ROOT/requirements-client-linux-arm64.txt" "$CLIENT_DIR/"

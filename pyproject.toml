@@ -1,0 +1,45 @@
+[project]
+name = "caps-writer-offline"
+version = "2.5.0"
+description = "CapsWriter-Offline: 全离线语音输入工具"
+requires-python = ">=3.10"
+
+# 合并 server + client 所有依赖，去重
+dependencies = [
+    # ASR core (server)
+    "sherpa-onnx",
+    "numpy",
+    "gguf",
+    "onnxruntime-directml",
+    # basic & cli
+    "rich",
+    "typer",
+    "colorama",
+    "websockets",
+    "watchdog",
+    "pypinyin",
+    "markdown",
+    # system, input, hardware (client)
+    "keyboard",
+    "pynput",
+    "pyclip",
+    "sounddevice",
+    # network & api
+    "openai",
+    "ollama",
+    "httpx",
+    # data process
+    "numba",
+    "srt",
+    "rapidfuzz",
+    # tray & image & UI
+    "pystray",
+    "Pillow",
+    "tkhtmlview",
+    "onnxruntime-gpu>=1.24.3",
+    "soundfile>=0.13.1",
+]
+
+[project.scripts]
+caps-server = "start_server:main"
+caps-client = "start_client:main"

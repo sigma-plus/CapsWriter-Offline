@@ -102,7 +102,8 @@ class SenseVoiceArgs:
     decoder_path = ModelPaths.sensevoice_decoder.as_posix()
     tokenizer_path = ModelPaths.sensevoice_tokenizer.as_posix()
     itn = True                  # 原生输出阿拉伯数字
-    onnx_provider = 'CPU'       # ONNX 推理后端 (CPU, DML)
+    onnx_provider = 'CPU'       # ONNX 推理后端 (CPU, CUDA, DML)
+                                # Linux + NVIDIA GPU 时改为 'CUDA'
     top_k = 8                   # 热词检索的 CTC 空间大小
     dml_pad_to = 30             # 开启 DirectML 加速时，短音频统一填充到指定长度，有加速效果
 
@@ -117,7 +118,8 @@ class FunASRNanoGGUFArgs:
     tokens_path = ModelPaths.fun_asr_nano_gguf_token.as_posix()
 
     # 显卡加速
-    onnx_provider = 'CPU'       # ONNX 推理后端 (CPU, DML)
+    onnx_provider = 'CPU'       # ONNX 推理后端 (CPU, CUDA, DML)
+                                # Linux + NVIDIA GPU 时改为 'CUDA'
     llm_use_gpu = True          # 是否启用 GPU 加速 GGUF 模型
     vulkan_force_fp32 = False   # 是否强制 FP32 计算（如果 GPU 是 Intel 集显且出现精度溢出，可设为 True）
     
@@ -140,7 +142,8 @@ class Qwen3ASRGGUFArgs:
     llm_fn = ModelPaths.qwen3_asr_gguf_llm_decode.name
 
     # 显卡加速
-    onnx_provider = 'CPU'       # ONNX 推理后端 (CPU, DML)
+    onnx_provider = 'CPU'       # ONNX 推理后端 (CPU, CUDA, DML)
+                                # Linux + NVIDIA GPU 时改为 'CUDA'
     llm_use_gpu = True          # 是否启用 GPU 加速 GGUF 模型
     
     # 模型细节
@@ -161,7 +164,8 @@ class ForceAlignerGGUFArgs:
     llm_fn = ModelPaths.force_aligner_gguf_llm_decode.name
 
     # 显卡加速
-    onnx_provider = 'CPU'       # ONNX 推理后端 (CPU, DML)
+    onnx_provider = 'CPU'       # ONNX 推理后端 (CPU, CUDA, DML)
+                                # Linux + NVIDIA GPU 时改为 'CUDA'
     llm_use_gpu = False          # 是否启用 GPU 加速 GGUF 模型
     
     # 对齐细节

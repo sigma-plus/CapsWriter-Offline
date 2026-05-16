@@ -19,7 +19,7 @@ from config_client import ClientConfig as Config
 from . import logger
 
 if TYPE_CHECKING:
-    from core.client.shortcut.shortcut_manager import ShortcutManager
+    from core.client.shortcut import ShortcutManager
 
 
 

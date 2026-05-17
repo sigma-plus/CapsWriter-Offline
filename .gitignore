@@ -196,3 +196,4 @@ release
 *.exe
 
 models/**/*.cfg
+*.pem

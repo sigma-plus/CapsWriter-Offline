@@ -1,0 +1,21 @@
+services:
+  capswriter-server:
+    image: capswriter-server:latest
+    container_name: capswriter-server
+    restart: unless-stopped
+    ports:
+      - "6016:6016"
+    volumes:
+      - ./models:/opt/CapsWriter-Offline/models
+      - ./config_server.py:/opt/CapsWriter-Offline/config_server.py
+      - ./hot.txt:/opt/CapsWriter-Offline/hot.txt
+      - ./hot-server.txt:/opt/CapsWriter-Offline/hot-server.txt
+      - ./hot-rule.txt:/opt/CapsWriter-Offline/hot-rule.txt
+      - ./logs:/opt/CapsWriter-Offline/logs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

@@ -1,0 +1,20 @@
+# CapsWriter-Offline 服务端依赖（Docker / CUDA 12）
+# 基础镜像：nvidia/cuda:12.6.3-cudnn9-runtime-ubuntu22.04
+# Python：3.11
+
+# ASR 核心
+sherpa-onnx
+numpy
+onnxruntime-gpu
+gguf
+soundfile
+
+# 基础
+rich
+websockets
+watchdog
+pypinyin
+
+# CLI
+typer
+colorama

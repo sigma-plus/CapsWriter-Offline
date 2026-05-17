@@ -11,12 +11,19 @@ echo "===== 下载服务端系统依赖 deb 包 ====="
 
 # -- print-uris 只打印 URL，不实际安装
 # 提取 URL 并用 curl 下载
-apt-get --print-uris --yes install \
+apt-get --print-uris --yes install --reinstall \
+    python3.12 \
+    python3.12-minimal \
+    python3.12-venv \
+    python3.12-dev \
+    libpython3.12t64 \
+    libpython3.12-stdlib \
+    libpython3.12-minimal \
+    python3-pip \
+    python3-venv \
     libsndfile1 \
     cmake \
     make \
-    python3-pip \
-    python3-venv \
     2>/dev/null \
     | grep -oP "'http://[^']+'" \
     | tr -d "'" \

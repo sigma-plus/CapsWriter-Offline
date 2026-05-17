@@ -1,0 +1,26 @@
+[Unit]
+Description=CapsWriter-Offline ASR Server
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/CapsWriter-Offline
+ExecStart=/usr/bin/python3.12 start_server.py
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+# 日志输出（journalctl -u capsriter-server -f 查看）
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=capsriter-server
+
+# 资源限制
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

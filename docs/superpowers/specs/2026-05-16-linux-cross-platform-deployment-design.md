@@ -65,16 +65,84 @@ PR #359 的客户端代码无需改动——`platform.system() == 'Linux'` 检�
 
 | 设备 | 联网 | 角色 |
 |------|------|------|
-| Windows x64 开发机 | ✅ 能上网 | 代码开发、WSL2 测试 |
-| 云服务器 Ubuntu 24.04 (x86_64, 无GPU) | ✅ 能上网 | 下载所有离线包、打包整理 |
+| Windows x64 开发机 | ✅ 能上网 | 代码开发 |
+| 云服务器 x86_64 (无GPU) | ✅ 能上网 | 下载服务端离线包、打包 |
+| **云服务器 ARM64** | ✅ 能上网 | **客户端原生打包（推荐）** |
 | Ubuntu 24.04 服务器 (2x4090D) | ❌ 仅内网 | 服务端运行、编译 llama.cpp |
 | 麒麟V10 ARM64 (飞腾2000) | ❌ 仅内网 | 客户端运行 |
 
-**不需要** ARM64 云服务器。客户端所有依赖都有 aarch64 预编译 wheel，x86_64 云服务器用 `pip download --platform manylinux2014_aarch64` 即可下载。
+### 客户端打包优先级
+
+**客户端部署易用性是重要指标。** 目标是让最终用户（麒麟 V10）做到"解压即运行"，无需手动安装 Python、pip 或配置环境变量。
+
+**推荐方案**：使用 ARM64 云服务器原生打包（PyInstaller 目录模式）。
+
+| 方案 | 客户端操作步骤 | 易用性 | 可靠性 |
+|------|-------------|--------|--------|
+| ARM64 云服务器 PyInstaller 打包 | 解压 → 配置 IP → 运行 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| x86_64 云服务器 pip download wheel | 安装 Python → apt 安装 → pip install → 配置 | ⭐⭐ | ⭐⭐⭐⭐⭐ |
+| Docker+QEMU 模拟打包 | 解压 → 配置 IP → 运行 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐（glibc 风险） |
+
+如果有 ARM64 云服务器，优先使用方案 A；否则退回到方案 B（wheel 离线安装）。
 
 ## 6. 离线部署策略
 
-### 6.1 云服务器上的下载工作
+### 6.0 客户端打包（ARM64 云服务器，推荐）
+
+> **核心目标：客户端"解压即运行"，用户无需安装 Python 或任何 Python 包。**
+
+**前提**：有一台能上网的 ARM64 云服务器，系统选择 Debian 11 Bullseye（glibc 2.31，兼容麒麟 V10）。
+
+```bash
+# 1. 安装依赖
+sudo apt update && sudo apt install -y python3.12 python3.12-venv python3-pip \
+    portaudio19-dev python3-tk xclip ffmpeg
+
+# 2. 克隆代码
+git clone https://github.com/HaujetZhao/CapsWriter-Offline.git
+cd CapsWriter-Offline
+git checkout feature/linux-cross-platform
+
+# 3. 创建虚拟环境并安装依赖
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -r requirements-client-linux-arm64.txt
+pip install pyinstaller
+
+# 4. PyInstaller 打包（目录模式）
+pyinstaller start_client.py \
+    --name CapsWriter-Client \
+    --noconfirm \
+    --collect-all pynput \
+    --collect-all sounddevice \
+    --collect-all PySide6 \
+    --collect-all pypinyin \
+    --hidden-import _tkinter
+
+# 5. 补充配置文件到产物目录
+cp -r core/ config_client.py hot*.txt hot-rule.txt LLM/ dist/CapsWriter-Client/
+
+# 6. 打包
+tar -czf client-offline.tar.gz -C dist CapsWriter-Client/
+```
+
+**客户端部署（麒麟 V10）**：
+
+```bash
+tar xzf client-offline.tar.gz
+cd CapsWriter-Client
+# 编辑服务端 IP
+vim config_client.py
+# 启动
+./CapsWriter-Client
+```
+
+**关键约束**：
+- 云服务器系统必须是 **Debian 11**（glibc 2.31）或 **Ubuntu 20.04**，不能更高，否则产物在麒麟 V10 上无法运行
+- 系统级共享库（libportaudio、libtk 等）已随 PyInstaller 打包，麒麟 V10 上可能仍需 `apt install` 少量运行时库
+
+### 6.1 云服务器上的下载工作（备选方案）
+
+> 无 ARM64 云服务器时，使用 x86_64 云服务器下载 wheel 包，在麒麟 V10 上手动安装。
 
 ```bash
 # 服务端 x86_64 wheel
@@ -97,7 +165,7 @@ pip download \
 git clone https://github.com/ggml-org/llama.cpp.git --depth 1 --branch b7798
 ```
 
-### 6.2 服务器离线安装
+### 6.2 服务器离线安装（两种方案共用）
 
 ```bash
 pip install --no-index --find-links=./wheels-x86_64 \
@@ -109,7 +177,9 @@ cmake .. -DGGML_CUDA=ON -DCMAKE_BUILD_TYPE=Release
 make -j$(nproc)
 ```
 
-### 6.3 麒麟客户端离线安装
+### 6.3 麒麟客户端离线安装（备选方案，需手动）
+
+> 仅在无 ARM64 云服务器时使用此方案。需要用户手动安装 Python 和系统依赖。
 
 ```bash
 # 系统包（需确认麒麟本地 APT 源或 ISO）
@@ -121,11 +191,6 @@ pip install --no-index --find-links=./wheels-aarch64 \
 ```
 
 ### 6.4 麒麟系统包离线风险
-
-麒麟V10 可能没有本地 APT 源。需提前确认：
-- 是否有安装光盘/ISO 可挂载为本地源
-- portaudio19-dev、python3-tk、xclip、ffmpeg 是否在麒麟的官方仓库中
-- 包名是否与 Ubuntu/Debian 一致
 
 ## 7. CUDA 13.0 兼容性风险
 
@@ -145,11 +210,17 @@ pip install --no-index --find-links=./wheels-aarch64 \
 ├── 编写离线下载脚本
 └── WSL2 验证客户端启动流程
 
-阶段 2：离线包准备（云服务器，能上网）
+阶段 2A：客户端打包（ARM64 云服务器，推荐）
+├── 选择 Debian 11 (glibc 2.31) 系统
+├── 安装 Python 3.12 + 依赖 + PyInstaller
+├── PyInstaller 目录模式打包
+├── 补充配置文件（core/、config、hot*.txt、LLM/）
+├── 打包为 client-offline.tar.gz
+│
+阶段 2B：服务端离线包（x86_64 云服务器或本地 VMware）
 ├── pip download x86_64 服务端依赖
-├── pip download aarch64 客户端依赖
 ├── 下载 llama.cpp 源码
-├── 打包：server-offline.tar + client-offline.tar
+├── 打包：server-offline.tar.gz
 
 阶段 3：服务端部署（Ubuntu 服务器，离线）
 ├── pip install --no-index 安装服务端依赖
@@ -159,11 +230,10 @@ pip install --no-index --find-links=./wheels-aarch64 \
 ├── 启动服务端，验证 ASR 推理正常
 
 阶段 4：客户端部署（麒麟V10，离线）
-├── 系统包安装（确认本地源）
-├── pip install --no-index 安装 Python 依赖
-├── 配置 WebSocket 指向服务端 IP
-├── 配置 LLM 指向 vLLM 端点
-└── 实测：快捷键 → 录音 → 识别 → 上屏
+├── 解压 client-offline.tar.gz
+├── 编辑 config_client.py（服务端 IP）
+├── 编辑 LLM 角色文件（vLLM 端点）
+└── ./CapsWriter-Client 启动，实测：快捷键 → 录音 → 识别 → 上屏
 ```
 
 ## 9. 工作量估计
@@ -171,7 +241,8 @@ pip install --no-index --find-links=./wheels-aarch64 \
 | 阶段 | 预计耗时 | 风险 |
 |------|---------|------|
 | 阶段 1：代码准备 | 1-2 天 | 低 |
-| 阶段 2：离线包准备 | 0.5-1 天 | 低 |
+| 阶段 2A：客户端打包（ARM64） | 0.5 天 | 低（原生打包，无模拟） |
+| 阶段 2B：服务端离线包 | 0.5 天 | 低 |
 | 阶段 3：服务端部署 | 1 天 | 中（CUDA 13.0 兼容性） |
-| 阶段 4：客户端部署 | 1-2 天 | 中（麒麟系统包、glibc 兼容性） |
-| **总计** | **4-6 天** | |
+| 阶段 4：客户端部署 | **0.5 天** | 低（解压即运行） |
+| **总计** | **3-5 天** | |

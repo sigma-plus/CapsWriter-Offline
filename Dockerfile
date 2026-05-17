@@ -2,10 +2,14 @@
 # 基础镜像：CUDA 12.6 + cuDNN 9 运行时
 # onnxruntime-gpu 1.26.0 构建于 CUDA 12，与 CUDA 13 宿主机驱动完全兼容
 
-FROM nvidia/cuda:12.6.3-cudnn9-runtime-ubuntu22.04
+FROM docker.1ms.run/nvidia/cuda:12.6.3-cudnn-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE=1
+
+# ---------- APT 换源（阿里云） ----------
+RUN sed -i 's|http://archive.ubuntu.com|https://mirrors.aliyun.com|g' /etc/apt/sources.list \
+    && sed -i 's|http://security.ubuntu.com|https://mirrors.aliyun.com|g' /etc/apt/sources.list
 
 # ---------- 系统依赖 + Python 3.11 ----------
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -18,10 +22,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsndfile1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Python 3.11 作为默认 + pip
+# Python 3.11 作为默认 + pip（清华源）
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
     && python3.11 -m ensurepip --upgrade \
-    && pip3 install --no-cache-dir --upgrade pip
+    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 WORKDIR /opt/CapsWriter-Offline
 
